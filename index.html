@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#111827" />
-  <meta name="description" content="Łapki GO — prywatna kolekcja psów spotkanych na spacerach." />
+  <meta name="description" content="Łapki GO — prywatna kolekcja psów i kotów spotkanych na spacerach." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
@@ -16,35 +16,41 @@
   <div class="app-shell">
     <header class="app-header">
       <div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><div><strong>Łapki GO</strong><small>Twoja kolekcja spacerów</small></div></div>
-      <span class="tag">Wersja testowa 0.2</span>
+      <span class="tag">Wersja testowa 0.4</span>
     </header>
 
     <main>
       <section id="view-home" class="view active" aria-labelledby="home-title">
         <div class="hero">
-          <p class="eyebrow">TWOJA PSIA PRZYGODA</p>
+          <p class="eyebrow">PSY I KOTY NA TWOJEJ MAPIE</p>
           <h1 id="home-title">Każde spotkanie<br /><span>to nowa łapka.</span></h1>
-          <p>Spotkaj psa, poproś właściciela o zgodę, zrób zdjęcie i nadaj mu imię. To Twoja prywatna kolekcja — nie publikujemy zdjęć ani lokalizacji.</p>
+          <p>Spotkaj psa lub kota, zachowaj bezpieczny dystans, zrób zdjęcie za zgodą opiekuna, jeśli to możliwe, i nadaj mu imię. Kolekcja oraz dokładne punkty mapy pozostają prywatne.</p>
           <button type="button" class="btn btn-primary hero-cta" id="start-camera">📷 Złap nową łapkę</button>
         </div>
         <div class="stat-grid">
-          <div class="stat-card"><span id="stat-dogs" class="stat-number">0</span><span class="stat-label">Odkryte psy</span></div>
+          <div class="stat-card"><span id="stat-dogs" class="stat-number">0</span><span class="stat-label">🐶 Psy</span></div>
+          <div class="stat-card"><span id="stat-cats" class="stat-number">0</span><span class="stat-label">🐱 Koty</span></div>
           <div class="stat-card"><span id="stat-points" class="stat-number">0</span><span class="stat-label">Punkty</span></div>
           <div class="stat-card"><span id="stat-places" class="stat-number">0</span><span class="stat-label">Miejsca</span></div>
         </div>
         <div class="section-heading"><div><p class="eyebrow">OSTATNIE ODKRYCIA</p><h2>Twoje łapki</h2></div><button class="text-btn" data-navigate="collection" type="button">Zobacz wszystkie →</button></div>
         <div id="recent-grid" class="dog-grid"></div>
-        <p id="home-empty" class="empty-state">Jeszcze nie masz żadnego psa w kolekcji. Zacznij od pierwszego spaceru! 🐕</p>
+        <p id="home-empty" class="empty-state">Jeszcze nie masz żadnych łapek w kolekcji. Na początek wypatrz psa albo kota! 🐾</p>
         <div class="safety-note"><strong>🔒 Prywatność od początku</strong><p>Fotografie i współrzędne są przechowywane tylko na tym urządzeniu. Nie ma publicznego profilu, chmury ani udostępniania zdjęć.</p></div>
       </section>
 
       <section id="view-catch" class="view" aria-labelledby="catch-title">
         <div class="section-heading"><div><p class="eyebrow">NOWE SPOTKANIE</p><h1 id="catch-title">Złap nową łapkę</h1></div></div>
-        <p class="lead">Zrób zdjęcie żywego psa — nie z galerii. Wykrywanie psa działa lokalnie na telefonie po pobraniu darmowego modelu AI.</p>
+        <fieldset class="species-choice" aria-label="Wybierz gatunek zwierzęcia">
+          <legend>Jakie zwierzę spotkałeś?</legend>
+          <label class="species-option"><input type="radio" name="animal-species" value="dog" checked /><span>🐶 Pies</span></label>
+          <label class="species-option"><input type="radio" name="animal-species" value="cat" /><span>🐱 Kot</span></label>
+        </fieldset>
+        <p id="catch-lead" class="lead">Zrób zdjęcie żywego psa — nie z galerii. AI sprawdzi gatunek bez wysyłania zdjęcia na serwer.</p>
         <div class="camera-frame" id="camera-frame">
-          <div id="camera-placeholder" class="camera-placeholder"><span aria-hidden="true">🐕</span><p>Aparat jest wyłączony</p><small>Włącz kamerę, by zrobić zdjęcie</small></div>
+          <div id="camera-placeholder" class="camera-placeholder"><span id="camera-placeholder-icon" aria-hidden="true">🐶</span><p>Aparat jest wyłączony</p><small>Włącz kamerę, by zrobić zdjęcie</small></div>
           <video id="camera-video" autoplay playsinline muted hidden></video>
-          <img id="photo-preview" alt="Podgląd zrobionego zdjęcia psa" hidden />
+          <img id="photo-preview" alt="Podgląd zrobionego zdjęcia" hidden /><span id="camera-preview-label" class="sr-only">Podgląd zdjęcia psa</span>
         </div>
         <div class="camera-controls">
           <button id="camera-toggle" class="btn btn-primary" type="button">📷 Włącz aparat</button>
@@ -52,46 +58,59 @@
           <button id="retake-btn" class="btn btn-outline" type="button" hidden>↻ Powtórz zdjęcie</button>
         </div>
         <div id="photo-fields" class="photo-fields" hidden>
-          <label for="dog-name">Jak nazwiesz tego psa?</label>
+          <label for="dog-name" id="dog-name-label">Jak nazwiesz tego psa?</label>
           <input id="dog-name" type="text" maxlength="32" placeholder="Np. Rudzielec, Borys, Łaciatek" autocomplete="off" />
-          <label class="toggle-line"><input id="save-location" type="checkbox" /><span>Zapisz miejsce spotkania <small>(prywatne; zapyta o dostęp do GPS)</small></span></label>
-          <p class="consent-hint">Dodawaj tylko zdjęcia zrobione za zgodą właściciela. Unikaj fotografowania ludzi, dzieci i danych osobowych.</p>
+          <label for="place-name" class="place-label">Gdzie spotkałeś to zwierzę? (opcjonalnie)</label>
+          <input id="place-name" type="text" maxlength="80" placeholder="Np. Trzebiatów, park miejski" autocomplete="off" />
+          <label for="dog-note" id="dog-note-label" class="place-label">Opis psa (opcjonalnie)</label>
+          <input id="dog-note" type="text" maxlength="120" placeholder="Np. brązowy, biała łapka, niebieska obroża" autocomplete="off" />
+          <label class="toggle-line"><input id="save-location" type="checkbox" /><span>📍 Dodaj GPS i automatycznie ustal miejscowość <small>Za Twoją zgodą po zapisaniu przekażemy współrzędne do OpenStreetMap Nominatim, aby rozpoznać nazwę okolicy. Możesz też tylko wpisać miejsce powyżej.</small></span></label>
+          <p class="consent-hint">Nie podchodź do obcych zwierząt ani nie prowokuj ich dla zdjęcia. Poproś opiekuna o zgodę. Unikaj fotografowania ludzi, dzieci i danych osobowych.</p>
           <div id="ai-check" class="ai-status" role="status" aria-live="polite">Zdjęcie gotowe do sprawdzenia.</div>
           <button id="save-dog" class="btn btn-primary full" type="button">✅ Sprawdź i zapisz psa</button>
           <button id="save-unverified" class="btn btn-link full" type="button" hidden>Zapisz tylko do testów (0 punktów)</button>
         </div>
         <p id="camera-message" role="status" aria-live="polite" class="status-line"></p>
-        <div class="safety-note"><strong>🧠 Co potrafi AI?</strong><p>COCO-SSD rozpoznaje obiekt „dog”, ale może popełniać błędy. Nie identyfikuje konkretnego psa, nie wykrywa pewnie treści drastycznych i nie gwarantuje, że zdjęcie nie przedstawia ekranu z fotografią.</p></div>
+        <div class="safety-note"><strong>🧠 Co potrafi AI?</strong><p>COCO-SSD rozpoznaje kategorie „dog” i „cat”, ale może się pomylić i przyjąć zdjęcie zwierzęcia z ekranu. Nie identyfikuje konkretnego zwierzęcia ani nie gwarantuje filtrowania drastycznych treści. Zdjęcia pozostają prywatne.</p></div>
       </section>
 
       <section id="view-collection" class="view" aria-labelledby="collection-title">
-        <div class="section-heading"><div><p class="eyebrow">ALBUM ODKRYĆ</p><h1 id="collection-title">Moja kolekcja</h1></div><span id="collection-count" class="chip">0 psów</span></div>
-        <label for="search-dogs" class="search-label">Szukaj według nazwy</label>
+        <div class="section-heading"><div><p class="eyebrow">ALBUM ODKRYĆ</p><h1 id="collection-title">Moja kolekcja</h1></div><span id="collection-count" class="chip">0 zdjęć</span></div>
+        <div class="filter-row" role="group" aria-label="Filtruj kolekcję">
+          <button type="button" class="filter-button active" data-filter-species="all" aria-pressed="true">🐾 Wszystkie</button>
+          <button type="button" class="filter-button" data-filter-species="dog" aria-pressed="false">🐶 Psy</button>
+          <button type="button" class="filter-button" data-filter-species="cat" aria-pressed="false">🐱 Koty</button>
+        </div>
+        <label for="search-dogs" class="search-label">Szukaj po imieniu, gatunku, miejscu i opisie</label>
         <input id="search-dogs" class="search-input" type="search" placeholder="🔎 Wpisz imię..." />
+        <p id="collection-notice" class="status-line" role="status" aria-live="polite"></p>
+        <p class="help-hint">Przy każdym zwierzęciu możesz zmienić nazwę i miejscowość przez „Edytuj”, a przez „Mapa” wskazać punkt dawnego spotkania.</p>
         <div id="collection-grid" class="dog-grid"></div>
-        <p id="collection-empty" class="empty-state">Jeszcze nie masz psów w kolekcji.</p>
+        <p id="collection-empty" class="empty-state">Jeszcze nie masz zwierząt w kolekcji.</p>
       </section>
 
       <section id="view-map" class="view" aria-labelledby="map-title">
         <div class="section-heading"><div><p class="eyebrow">TYLKO DLA CIEBIE</p><h1 id="map-title">Mapa spotkań</h1></div><span class="chip">🔒 Prywatna</span></div>
-        <p class="lead">Pokazuje wyłącznie spotkania, przy których zaznaczono zapis lokalizacji. Współrzędne nie są przesyłane na nasz serwer. Kafelki mapy pobierane są od OpenStreetMap, gdy otworzysz tę zakładkę.</p>
-        <div id="map" class="map-area" role="region" aria-label="Mapa spotkań psów"></div>
+        <p class="lead">Pokazuje wyłącznie spotkania, przy których zaznaczono zapis lokalizacji. Współrzędne nie są przesyłane na nasz serwer. Kafelki mapy pobierane są od OpenStreetMap, gdy otworzysz tę zakładkę. Jeśli dodasz punkt ręcznie, dotknij mapy w miejscu spotkania.</p>
+        <div id="pin-mode" class="pin-banner" hidden><strong>📍 Zaznacz miejsce dawnego spotkania</strong><p id="pin-mode-text"></p><button id="cancel-pin" type="button" class="btn btn-outline">Anuluj wybieranie</button></div>
+        <div id="map" class="map-area" role="region" aria-label="Mapa spotkań psów i kotów"></div>
         <p id="map-message" class="status-line" role="status"></p>
         <p class="map-credit"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></p>
       </section>
 
       <section id="view-help" class="view" aria-labelledby="help-title">
-        <div class="section-heading"><div><p class="eyebrow">MODUŁ W PLANACH</p><h1 id="help-title">Zaginione psy</h1></div><span class="chip">W przygotowaniu</span></div>
-        <div class="feature-card"><span class="feature-icon">❤️</span><h2>Pomóż wrócić do domu</h2><p>W kolejnej wersji chcemy umożliwić bezpieczne ogłoszenia o zaginięciach oraz prywatne zgłaszanie obserwacji właścicielom. Na razie ten moduł nie działa — nie przyjmujemy ogłoszeń ani danych kontaktowych.</p></div>
-        <div class="safety-note"><strong>Bezpieczeństwo ważniejsze niż punkty</strong><p>Za zgłoszenia zaginionych psów nie będziemy przyznawać punktów. Nie będziemy też ujawniać dokładnej bieżącej lokalizacji zwierzęcia publicznie.</p></div>
+        <div class="section-heading"><div><p class="eyebrow">MODUŁ W PLANACH</p><h1 id="help-title">Zaginione psy i koty</h1></div><span class="chip">W przygotowaniu</span></div>
+        <div class="feature-card"><span class="feature-icon">❤️</span><h2>Pomóż wrócić do domu</h2><p>W kolejnej wersji chcemy umożliwić bezpieczne ogłoszenia o zaginionych psach i kotach oraz prywatne zgłaszanie obserwacji opiekunom. Na razie ten moduł nie działa — nie przyjmujemy ogłoszeń ani danych kontaktowych.</p></div>
+        <div class="safety-note"><strong>Bezpieczeństwo ważniejsze niż punkty</strong><p>Za zgłoszenia zaginionych zwierząt nie będziemy przyznawać punktów. Nie będziemy też ujawniać dokładnej bieżącej lokalizacji zwierzęcia publicznie.</p></div>
       </section>
 
       <section id="view-settings" class="view" aria-labelledby="settings-title">
         <div class="section-heading"><div><p class="eyebrow">TWOJE DANE</p><h1 id="settings-title">Prywatność i ustawienia</h1></div></div>
         <div class="feature-card"><h2>Jak przechowujemy zdjęcia?</h2><p>W tej wersji tylko lokalnie w bazie IndexedDB Twojej przeglądarki. Nie potrzebujesz konta. Po zmianie telefonu lub wyczyszczeniu danych przeglądarki możesz stracić kolekcję.</p><p>Zdjęcia są zmniejszane do maksymalnie 1024 pikseli na dłuższym boku, by oszczędzać miejsce.</p></div>
-        <div class="feature-card"><h2>Wykrywanie psów i internet</h2><p>Model COCO-SSD ładuje się z zewnętrznego CDN przy pierwszym użyciu. Analiza zdjęcia odbywa się w przeglądarce — nie wysyłamy zdjęcia do usługi AI. Mapa wymaga internetu.</p><p>To demonstracja, a nie zabezpieczona aplikacja społecznościowa. Automatycznej moderacji drastycznych zdjęć na razie nie ma, dlatego zdjęcia nie są publikowane.</p></div>
+        <div class="feature-card"><h2>Wykrywanie psów i kotów</h2><p>Model COCO-SSD ładuje się z zewnętrznego CDN przy pierwszym użyciu. Analiza zdjęcia odbywa się w przeglądarce — nie wysyłamy zdjęcia do usługi AI. Mapa wymaga internetu.</p><p>To demonstracja, a nie zabezpieczona aplikacja społecznościowa. Automatycznej moderacji drastycznych zdjęć na razie nie ma, dlatego zdjęcia nie są publikowane.</p></div>
+        <div class="feature-card"><h2>Miejsce spotkania i dane</h2><p>Możesz wpisać miejscowość samodzielnie albo włączyć GPS. Przy automatycznym ustalaniu nazwy okolicy współrzędne wysyłamy na żądanie do publicznego serwisu Nominatim (OpenStreetMap). Wybór jest dobrowolny. Zwykłe zdjęcia i historia nie opuszczają przeglądarki. <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">Zasady Nominatim</a>.</p><p>Do starszego zdjęcia możesz dodać nazwę i punkt na mapie w kolekcji. Nie przypisuj mu aktualnego GPS, jeśli zdjęcie było zrobione gdzie indziej.</p></div>
         <div class="feature-card"><h2>Kopia zapasowa kolekcji</h2><p>Możesz pobrać całą kolekcję ze zdjęciami i lokalizacjami jako prywatny plik JSON. Przechowuj go bezpiecznie. Nie wysyłaj publicznie.</p><button id="export-data" type="button" class="btn btn-primary">⬇️ Pobierz kopię</button><p>Masz kopię z Łapki GO? Przywróć zdjęcia na tym telefonie (istniejące wpisy zostaną zachowane).</p><input id="import-data" type="file" accept=".json,application/json" aria-label="Wybierz plik kopii Łapki GO"/><p id="backup-message" class="status-line" role="status"></p></div><div class="feature-card"><h2>Usuń lokalne dane</h2><p>Usunie wszystkie zdjęcia, punkty i prywatne lokalizacje z tej przeglądarki. Nie można tego cofnąć.</p><button id="delete-all" type="button" class="btn btn-danger">🗑 Usuń moją kolekcję</button></div>
-        <p class="footer-note">Łapki GO v0.2 · prototyp, bez rejestracji, bez reklam i bez płatnych usług.</p>
+        <p class="footer-note">Łapki GO v0.4 · prototyp, bez rejestracji, bez reklam i bez płatnych usług.</p>
       </section>
     </main>
 

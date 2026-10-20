@@ -1,24 +1,38 @@
-# Łapki GO v0.2 — aplikacja gotowa do wgrania na GitHub Pages
+# Łapki GO 0.4 — psy i koty (aktualizacja 0.2/0.3)
 
-**To wersja prywatna / testowa.** Nie jest to publiczna gra społecznościowa. Nie ma kont, serwera, rankingów, zaginionych psów ani niezawodnej moderacji drastycznych treści. Zdjęcia i GPS przechowuje tylko na Twoim urządzeniu (IndexedDB).
+Aplikacja PWA na telefon: **psy + koty**, aparat na żywo, lokalne wykrywanie gatunku przez COCO-SSD, nazwy i opisy, prywatna kolekcja, mapa spotkań, punkty i kopie zapasowe. **Brak kont i publikacji zdjęć.**
 
-## Uruchomienie na GitHubie — bez programowania
-1. Rozpakuj ZIP w Windows (prawy przycisk → **Wyodrębnij wszystkie**).
-2. GitHub → `https://github.com/new` → nazwa `lapki-go`, Public, bez dodatkowych plików → **Create repository**.
-3. W repozytorium wybierz **uploading an existing file** (lub **Add file → Upload files**). PRZECIĄGNIJ ZAWARTOŚĆ rozpakowanego folderu (np. `index.html`, `app.js`, `styles.css`, `sw.js`, `manifest.webmanifest`, folder `icons`) — nie sam ZIP ani nadrzędny folder. Sprawdź, czy `index.html` jest w katalogu głównym. **Commit changes**.
-4. **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: main → /(root) → Save.**
-5. Otwórz adres podany przez GitHub Pages: `https://TWOJ_LOGIN.github.io/lapki-go/`. Uprawnienia do aparatu i GPS działają przez HTTPS.
-6. Android: Chrome → menu → **Dodaj do ekranu głównego / Zainstaluj**. iPhone: Safari → Udostępnij → **Do ekranu początkowego**.
+## Nowości w 0.4
 
-## Funkcje
-- Zdjęcia z aparatu na żywo, bez wyboru zdjęć z galerii do gry.
-- Darmowy COCO-SSD: wykrywanie kategorii `dog`; próba zablokowania osób rozpoznanych w kadrze. **Żaden filtr nie gwarantuje skuteczności.**
-- Lokalna kolekcja z imionami i punktami, sprawdzanie identycznych plików oraz bardzo podobnych kadrów.
-- Opcjonalny GPS i prywatna mapa spotkań na Leaflet/OSM. Oglądany obszar mapy może być widoczny dla dostawcy kafelków.
-- Eksport i przywracanie kopii JSON w zakładce **Opcje**; backup zawiera zdjęcia i potencjalnie dokładne GPS, dlatego nie publikuj go.
-- Tryb testowego zapisu zdjęcia bez AI: 0 pkt (gdy AI nie działa).
+- W zakładce **Złap** wybierz **🐶 Pies** lub **🐱 Kot** przed otwarciem aparatu. Model AI musi wykryć *wybrany* gatunek.
+- Każdy zapis otrzymuje gatunek; na karcie kolekcji widać oznaczenie pies/kot, a na mapie odpowiednią ikonkę.
+- Osobne liczniki psów i kotów, łączne punkty, filtr **Wszystkie / Psy / Koty** oraz wyszukiwanie.
+- Dotychczasowe dane pozostają pod tą samą nazwą bazy **`lapki-go-v1`**, w tym samym magazynie **`dogs`**. Stare rekordy bez gatunku automatycznie traktujemy jako **psy** — nie usuwamy ani nie przepisujemy bazy.
+- Działa także aktualizacja **0.2 → 0.4**: zawiera dodatki wersji 0.3 (wpisywanie miejsca, edycja i pinezka na mapie, notatka, kopie danych, utrudnienia duplikatów).
+- Plik kopii zapasowej nowej wersji ma format **v2**, a import obsługuje **v1 (stare psy)** i **v2 (psy i koty)**.
+- Poprawiona reakcja na przeglądarki bez obsługi aparatu — przycisk nie zostaje na stałe nieaktywny.
 
-## Koszty i ograniczenia
-Kod działa bez własnego serwera i opłat początkowych. Biblioteki AI i kafelki map pobierają się z zewnętrznych usług. To prototyp do niewielkich testów, nie skalowana usługa publiczna. Dane lokalne mogą zniknąć przy czyszczeniu przeglądarki — zrób kopię zapasową. GitHub Pages na darmowym planie wymaga publicznego repozytorium. Nie używaj Pages jako docelowego hostingu płatnej usługi.
+## Jak zaktualizować GitHub
 
-Bezpieczeństwo w terenie: pytaj o zgodę, nie podchodź do obcych psów i nie fotografuj ludzi. Brak możliwości niezawodnego odróżnienia żywego psa od zdjęcia psa na innym ekranie. Wykrywanie drastycznych treści nie jest zaimplementowane, dlatego zdjęcia nie są upubliczniane.
+1. **W starej aplikacji** otwórz **Opcje → Pobierz kopię**. Schowaj bezpiecznie pobrany plik JSON; może zawierać lokalizacje.
+2. Rozpakuj `Lapki_GO_psy_i_koty_v0_4.zip` na komputerze.
+3. Wejdź na https://github.com/djfokus176-stack/lapki-go i wybierz **Add file → Upload files**.
+4. Przenieś **zawartość** ZIP, a nie ZIP jako jeden plik. Zastąp pliki o tych samych nazwach. Upewnij się, że `index.html` oraz `app.js` są w głównym katalogu repozytorium (obok siebie), a obrazy w `icons/`.
+5. Kliknij **Commit changes**, odczekaj na publikację GitHub Pages. Otwórz https://djfokus176-stack.github.io/lapki-go/ i upewnij się, że nagłówek pokazuje **Wersja testowa 0.4**.
+6. Nie czyść danych strony ani nie odinstalowuj aplikacji przed pobraniem kopii. Korzystaj z tej samej przeglądarki i adresu, żeby zobaczyć starą kolekcję.
+
+## Ważne ograniczenia
+
+- AI rozpoznaje **kategorię** pies/kot, lecz może pomylić zdjęcie na ekranie lub maskotkę z żywym zwierzęciem. Nie rozpoznaje tożsamości konkretnego psa/kota i nie filtruje wiarygodnie drastycznych treści.
+- Zdjęcia pozostają lokalne. Nie publikuj zdjęć ludzi ani lokalizacji cudzych zwierząt. Nigdy nie podchodź do obcych zwierząt tylko po to, by zrobić zdjęcie.
+- Model AI i mapa przy pierwszym użyciu wymagają internetu. Mapa korzysta z publicznych kafelków OSM; automatyczna nazwa miejsca z Nominatim — oba publiczne serwisy nadają się tu tylko do małych testów zgodnie z ich zasadami.
+- Lokalna baza może zostać wyczyszczona przez telefon lub przeglądarkę, więc zapisuj kopię.
+- Moduł zaginionych psów i kotów jest tylko zapowiedzią. Brak rzeczywistej funkcji zgłoszeń.
+- Nie jest to wersja publicznej gry społecznościowej; punkty można oszukać, a skuteczność detekcji trzeba ocenić na telefonie.
+
+## Przeprowadzone testy
+
+- `node --check app.js` — składnia JavaScript.
+- Test w Chromium na rozmiarze telefonu z przykładowymi rekordami (bez prawdziwej kamery): wybór gatunku, filtry, karty, liczniki i obsługa starszych rekordów bez `species`.
+- Test ścieżki zapisu kota z symulowanym wynikiem AI `cat` i nazwą miejscowości.
+- Rzeczywisty aparat i detekcja na urządzeniu nie były sprawdzane.

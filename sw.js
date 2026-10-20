@@ -1,17 +1,13 @@
-const CACHE = 'lapki-go-shell-v2';
-const APP_SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
-self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)));
-  self.skipWaiting();
-});
-self.addEventListener('activate',event=>{
-  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('lapki-go-shell-')&&key!==CACHE).map(key=>caches.delete(key)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch',event=>{
-  if(event.request.method!=='GET')return;
-  const url=new URL(event.request.url);
-  // Intentionally do not cache OSM map tiles, external AI models or third-party assets.
-  if(url.origin!==self.location.origin)return;
-  event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request)));
+const CACHE='lapki-go-shell-v4';
+const APP_SHELL=['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP_SHELL)));self.skipWaiting();});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('lapki-go-shell-')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
+self.addEventListener('fetch',e=>{
+ if(e.request.method!=='GET')return;
+ const url=new URL(e.request.url);
+ if(url.origin!==self.location.origin)return;
+ if(e.request.mode==='navigate'||/\.(html|js|css)$/.test(url.pathname)){
+   e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));return;
+ }
+ e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
 });
