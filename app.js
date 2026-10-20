@@ -1,4 +1,4 @@
-/* Łapki GO MVP v0.6: psy, koty, misje spacerowe z opcjonalnym pomiarem GPS. */
+/* Łapki GO MVP v0.6.1: psy, koty, misje spacerowe z opcjonalnym pomiarem GPS. */
 'use strict';
 const $ = (id) => document.getElementById(id);
 const DB_NAME = 'lapki-go-v1';
@@ -21,7 +21,7 @@ const REPORTS_STORAGE_KEY = 'lapki-go-local-reports-v1';
 let reports=[];
 let walkWatchId=null, lastWalkFix=null;
 let gpsStatus='GPS nieaktywny';
-const GPS_MAX_ACCURACY=70; // metres
+const GPS_MAX_ACCURACY=100; // metres: avoid very noisy signals
 const GPS_MAX_WALKING_SPEED=3.5; // metres/second; reject car/train/teleport jumps
 const GPS_MAX_GAP_MS=90000;
 const clampMeters = n => Number.isFinite(n) ? Math.max(0,Math.min(n,1e6)) : 0;
@@ -39,7 +39,7 @@ function handleWalkPosition(position){
   const active=walkState.active;if(!active || document.visibilityState==='hidden')return;
   const {latitude:lat,longitude:lng,accuracy}=position.coords, at=position.timestamp||Date.now();
   if(!Number.isFinite(lat)||!Number.isFinite(lng)||!Number.isFinite(accuracy)||accuracy>GPS_MAX_ACCURACY ||accuracy<0){
-    gpsStatus=`Sygnał GPS za słaby (dokładność ±${Math.round(accuracy||0)} m). Poczekaj na lepszy zasięg.`;renderMissions();return;
+    gpsStatus=`GPS jest dostępny, lecz sygnał jest zbyt słaby (±${Math.round(accuracy||0)} m). Wyjdź na otwartą przestrzeń, odczekaj chwilę i nie wyłączaj aplikacji.`;renderMissions();return;
   }
   const fix={lat,lng,at,accuracy};
   if(!lastWalkFix){lastWalkFix=fix;gpsStatus=`GPS działa, dokładność ±${Math.round(accuracy)} m. Rusz na spacer.`;renderMissions();return;}
@@ -52,7 +52,7 @@ function handleWalkPosition(position){
     // Avoid treating teleportation as a route; reset baseline to avoid repeated jumps.
     lastWalkFix=fix;gpsStatus='Pominięto skok GPS lub prędkość zbyt dużą dla spaceru.';renderMissions();return;
   }
-  if(meters<minMovement){gpsStatus=`GPS działa (±${Math.round(accuracy)} m), czekam na wyraźne przemieszczenie.`;return;}
+  if(meters<minMovement){gpsStatus=`GPS działa (±${Math.round(accuracy)} m), czekam na wyraźne przemieszczenie. Przejdź kilkadziesiąt metrów.`;renderMissions();return;}
   active.distanceMeters=clampMeters((active.distanceMeters||0)+meters);
   active.gpsPoints=(active.gpsPoints||0)+1;
   lastWalkFix=fix;
@@ -62,15 +62,24 @@ function handleWalkPosition(position){
 function startWalkGps(){
   if(!walkState.active || walkWatchId!==null || document.visibilityState==='hidden')return;
   if(!walkState.active.gpsEnabled){gpsStatus='GPS wyłączony dla tego spaceru.';renderMissions();return;}
-  if(!navigator.geolocation){gpsStatus='Brak geolokalizacji w tej przeglądarce.';renderMissions();return;}
-  gpsStatus='Proszę o lokalizację GPS…';
+  if(!window.isSecureContext){gpsStatus='GPS wymaga bezpiecznego adresu HTTPS. Otwórz aplikację bezpośrednio przez https:// w Chrome lub Safari.';renderMissions();return;}
+  if(!navigator.geolocation){gpsStatus='Ta przeglądarka nie obsługuje lokalizacji. Otwórz stronę w Chrome/Safari zamiast w podglądzie komunikatora.';renderMissions();return;}
+  gpsStatus='Uruchamiam GPS. Jeśli telefon zapyta o lokalizację, wybierz Zezwól. Zostań na tym ekranie…';
   try{walkWatchId=navigator.geolocation.watchPosition(handleWalkPosition,err=>{
-    gpsStatus=err.code===1?'Odmówiono GPS. Włącz lokalizację w ustawieniach przeglądarki.':err.code===3?'Czekam na GPS (przekroczono czas próby).':'GPS niedostępny. Sprawdź ustawienia telefonu.';
+    gpsStatus=err.code===1?'Brak zgody na GPS. Włącz lokalizację telefonu oraz zezwól na lokalizację tej strony w Chrome/Safari, a potem kliknij Ponów GPS.':err.code===3?'GPS nie ustalił położenia w 20 sekund. Wyjdź na otwartą przestrzeń i kliknij Ponów GPS.':'Telefon nie udostępnia położenia. Sprawdź usługi lokalizacji i uprawnienia przeglądarki, następnie kliknij Ponów GPS.';
     renderMissions();
     if(err.code===1){stopWalkGps();}
   },{enableHighAccuracy:true,maximumAge:0,timeout:20000});}
   catch {gpsStatus='Nie udało się uruchomić GPS.';}
   renderMissions();
+}
+function retryWalkGps(){
+  if(!walkState.active){$('walk-notice').textContent='Najpierw wybierz i rozpocznij spacer.';return;}
+  walkState.active.gpsEnabled=true;
+  $('walk-gps-choice').checked=true;
+  stopWalkGps();
+  gpsStatus='Ponawiam połączenie z GPS…';
+  writeWalkState();startWalkGps();
 }
 function readReports(){try{const v=JSON.parse(localStorage.getItem(REPORTS_STORAGE_KEY)||'[]');return Array.isArray(v)?v.filter(x=>typeof x.id==='string'&&typeof x.reason==='string').slice(-100):[];}catch{return []}}
 function saveReports(){try{localStorage.setItem(REPORTS_STORAGE_KEY,JSON.stringify(reports));return true;}catch{return false}}
@@ -160,13 +169,17 @@ function cancelWalk() {
   stopWalkGps();walkState.active=null;writeWalkState();renderMissions();$('walk-notice').textContent='Misja anulowana.';
 }
 async function testGps() {
-  const btn=$('test-gps');btn.disabled=true;$('gps-test-result').textContent='Sprawdzam dostęp do GPS...';
+  const btns=[$('test-gps'),$('walk-test-gps')].filter(Boolean);
+  const targets=[$('gps-test-result'),$('walk-test-result')].filter(Boolean);
+  btns.forEach(b=>b.disabled=true);
+  targets.forEach(t=>t.textContent='📡 Szukam sygnału GPS… Potwierdź dostęp do lokalizacji i poczekaj na wynik.');
   try {
     const result=await gpsWithTimeout();
-    $('gps-test-result').textContent=result.coords
-      ? `✅ GPS działa (dokładność około ±${Math.round(result.coords.accuracy||0)} m): ${result.coords.lat.toFixed(5)}, ${result.coords.lng.toFixed(5)}. To tylko test — nie zapisujemy miejsca ani nie udostępniamy go.`
-      : `⚠️ ${result.error||'Nie udało się ustalić położenia.'} Sprawdź zgodę na lokalizację w telefonie.`;
-  } finally{btn.disabled=false;}
+    const message=result.coords
+      ? `✅ GPS działa! Dokładność około ±${Math.round(result.coords.accuracy||0)} m. ${result.coords.accuracy>GPS_MAX_ACCURACY?'Sygnał nadal jest zbyt słaby do liczenia kilometrów — wyjdź na otwartą przestrzeń.':'Możesz uruchomić spacer i mierzyć kilometry.'} Test nie zapisuje lokalizacji.`
+      : `⚠️ ${result.error||'Nie udało się ustalić położenia.'} Włącz lokalizację telefonu, zezwól Chrome/Safari na dostęp i otwórz aplikację bezpośrednio (nie wewnątrz Facebooka/Messengera).`;
+    targets.forEach(t=>t.textContent=message);
+  } finally{btns.forEach(b=>b.disabled=false);}
 }
 
 
@@ -445,7 +458,8 @@ function hashDistance(a,b) {
   return count;
 }
 function gpsWithTimeout() {
-  if (!('geolocation' in navigator)) return Promise.resolve({coords:null,error:'Ten telefon nie udostępnia GPS.'});
+  if (!window.isSecureContext) return Promise.resolve({coords:null,error:'GPS wymaga bezpiecznej strony HTTPS.'});
+  if (!('geolocation' in navigator)) return Promise.resolve({coords:null,error:'Brak dostępu do geolokalizacji w tej przeglądarce.'});
   return new Promise(resolve=>{
     navigator.geolocation.getCurrentPosition(
       pos=>resolve({coords:{lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy},error:null}),
@@ -725,6 +739,8 @@ function init() {
   $('save-unverified').addEventListener('click',saveUnverified);
   $('gallery-file').addEventListener('change',chooseGalleryPhoto);
   $('test-gps').addEventListener('click',testGps);
+  $('walk-test-gps').addEventListener('click',testGps);
+  $('walk-retry-gps').addEventListener('click',retryWalkGps);
   $('submit-local-report').addEventListener('click',submitLocalReport);
   $('export-reports').addEventListener('click',downloadLocalReports);
   document.querySelectorAll('[data-walk-minutes]').forEach(b=>b.addEventListener('click',()=>startWalk(Number(b.dataset.walkMinutes))));
