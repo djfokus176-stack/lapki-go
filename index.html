@@ -8,15 +8,15 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="styles.css?v=0.6" />
+  <link rel="stylesheet" href="styles.css?v=0.6.1" />
   <title>Łapki GO — kolekcjonuj spotkania</title>
-  <script src="app.js?v=0.6" defer></script>
+  <script src="app.js?v=0.6.1" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <header class="app-header">
       <div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><div><strong>Łapki GO</strong><small>Twoja kolekcja spacerów</small></div></div>
-      <span class="tag">Wersja testowa 0.6</span>
+      <span class="tag">Wersja testowa 0.6.1</span>
     </header>
 
     <main>
@@ -105,7 +105,7 @@
 
       <section id="view-missions" class="view" aria-labelledby="missions-title">
         <div class="section-heading"><div><p class="eyebrow">WIRTUALNE WYZWANIA</p><h1 id="missions-title">🎯 Misje spacerowe</h1></div></div>
-        <p class="lead">Wybierz spacer, uruchom licznik i wróć, gdy minie czas. Nie potrzebujesz psa ani kota. Brak nagród pieniężnych — tylko XP, poziomy i odznaki.</p>
+        <p class="lead">Najpierw wybierz misję lub spacer swobodny. Przy pierwszym uruchomieniu zezwól na lokalizację. GPS działa tylko gdy aplikacja pozostaje otwarta i aktywna; zablokowany ekran może przerwać pomiar. Nie potrzebujesz psa ani kota.</p>
         <div class="mission-level"><strong id="mission-level">Poziom 1</strong><span id="mission-xp">0 XP</span><div class="xp-track"><div id="mission-xp-bar"></div></div><small id="mission-xp-next">Do poziomu 2: 100 XP</small></div>
         <div id="mission-choices" class="mission-choice-grid">
           <button type="button" class="mission-choice" data-walk-minutes="0"><strong>🚶 Spacer swobodny</strong><span>Bez limitu czasu, mierz KM</span><small>Bez XP</small></button>
@@ -113,10 +113,12 @@
           <button type="button" class="mission-choice" data-walk-minutes="30"><strong>🚶 Odkrywca</strong><span>30 minut</span><small>+35 XP</small></button>
           <button type="button" class="mission-choice" data-walk-minutes="45"><strong>🏅 Długa wyprawa</strong><span>45 minut</span><small>+60 XP</small></button>
         </div>
-        <label class="toggle-line walk-gps-toggle"><input id="walk-gps-choice" type="checkbox" checked /><span>📍 Mierz kilometry przez GPS <small>Trasa i dokładne punkty GPS nie są zapisywane ani wysyłane. Zapisujemy tylko sumę metrów. Możesz odmówić dostępu.</small></span></label>
+        <label class="toggle-line walk-gps-toggle"><input id="walk-gps-choice" type="checkbox" checked /><span>📍 Mierz kilometry przez GPS <small>Zezwól przeglądarce na lokalizację. Trasa i dokładne punkty GPS nie są zapisywane ani wysyłane; zachowujemy tylko sumę metrów.</small></span></label>
+        <div class="feature-card"><h2>📡 Czy GPS działa?</h2><p>Sprawdź tutaj, nawet bez zwierzęcia i bez uruchamiania misji. Jeśli wynik jest niedostępny, włącz lokalizację telefonu oraz pozwolenie dla Chrome/Safari. Test nie zapisuje położenia.</p><button type="button" class="btn btn-outline" id="walk-test-gps">Sprawdź GPS teraz</button><p id="walk-test-result" class="status-line" role="status" aria-live="polite"></p></div>
         <div class="feature-card" id="walk-live" hidden>
           <h2>🚶 Trwa misja</h2><p id="walk-mission-name"></p><div class="walk-stats"><div><small>⏳ Do końca</small><strong id="walk-countdown" class="walk-clock">00:00</strong></div><div><small>📍 Dystans GPS</small><strong id="walk-km">0,00 km</strong></div><div><small>⏱ Czas spaceru</small><strong id="walk-elapsed">0 min</strong></div><div><small>🏃 Średnia prędkość</small><strong id="walk-avg">0 km/h</strong></div></div><p id="walk-gps-state" class="status-line">Uruchamiam GPS…</p>
           <p id="walk-progress"></p>
+          <button type="button" class="btn btn-outline" id="walk-retry-gps">📡 Ponów uruchomienie GPS</button>
           <button type="button" class="btn btn-primary" id="finish-walk" disabled>✅ Zakończ misję</button>
           <button type="button" class="btn btn-outline" id="cancel-walk">Anuluj</button>
         </div>
