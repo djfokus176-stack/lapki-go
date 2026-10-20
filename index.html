@@ -8,15 +8,15 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=0.6" />
   <title>Łapki GO — kolekcjonuj spotkania</title>
-  <script src="app.js" defer></script>
+  <script src="app.js?v=0.6" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <header class="app-header">
       <div class="brand"><span class="brand-mark" aria-hidden="true">🐾</span><div><strong>Łapki GO</strong><small>Twoja kolekcja spacerów</small></div></div>
-      <span class="tag">Wersja testowa 0.4</span>
+      <span class="tag">Wersja testowa 0.6</span>
     </header>
 
     <main>
@@ -33,10 +33,11 @@
           <div class="stat-card"><span id="stat-points" class="stat-number">0</span><span class="stat-label">Punkty</span></div>
           <div class="stat-card"><span id="stat-places" class="stat-number">0</span><span class="stat-label">Miejsca</span></div>
         </div>
+        <div class="feature-card walk-home"><h2>🚶 Misje spacerowe</h2><p>Spaceruj nawet bez spotkania zwierząt. Zdobywaj XP i odznaki za wyzwania 15, 30 i 45 minut. Postęp zostaje na Twoim telefonie.</p><p id="home-level" class="level-highlight">Poziom 1 • 0 XP</p><p id="home-km" class="level-highlight">0,00 km zapisanych spacerów</p><button type="button" class="btn btn-outline" data-navigate="missions">🎯 Przejdź do misji</button></div>
         <div class="section-heading"><div><p class="eyebrow">OSTATNIE ODKRYCIA</p><h2>Twoje łapki</h2></div><button class="text-btn" data-navigate="collection" type="button">Zobacz wszystkie →</button></div>
         <div id="recent-grid" class="dog-grid"></div>
         <p id="home-empty" class="empty-state">Jeszcze nie masz żadnych łapek w kolekcji. Na początek wypatrz psa albo kota! 🐾</p>
-        <div class="safety-note"><strong>🔒 Prywatność od początku</strong><p>Fotografie i współrzędne są przechowywane tylko na tym urządzeniu. Nie ma publicznego profilu, chmury ani udostępniania zdjęć.</p></div>
+        <div class="safety-note"><strong>🔒 Prywatność od początku</strong><p>Zdjęcia, punkty spacerowe i nazwy miejsc są przechowywane tylko na tym urządzeniu. Przy pomiarze dystansu zapisujemy sumę metrów, nie trasę GPS. Nie ma publicznego profilu ani chmury. Możesz dobrowolnie udostępnić znajomym sam tekst z wynikiem — bez zdjęć i lokalizacji.</p></div>
       </section>
 
       <section id="view-catch" class="view" aria-labelledby="catch-title">
@@ -46,7 +47,7 @@
           <label class="species-option"><input type="radio" name="animal-species" value="dog" checked /><span>🐶 Pies</span></label>
           <label class="species-option"><input type="radio" name="animal-species" value="cat" /><span>🐱 Kot</span></label>
         </fieldset>
-        <p id="catch-lead" class="lead">Zrób zdjęcie żywego psa — nie z galerii. AI sprawdzi gatunek bez wysyłania zdjęcia na serwer.</p>
+        <p id="catch-lead" class="lead">Zrób zdjęcie z aparatu lub wybierz fotografię z galerii. AI sprawdzi gatunek bez wysyłania zdjęcia na serwer.</p>
         <div class="camera-frame" id="camera-frame">
           <div id="camera-placeholder" class="camera-placeholder"><span id="camera-placeholder-icon" aria-hidden="true">🐶</span><p>Aparat jest wyłączony</p><small>Włącz kamerę, by zrobić zdjęcie</small></div>
           <video id="camera-video" autoplay playsinline muted hidden></video>
@@ -56,7 +57,10 @@
           <button id="camera-toggle" class="btn btn-primary" type="button">📷 Włącz aparat</button>
           <button id="snap-btn" class="btn btn-primary" type="button" hidden>📸 Zrób zdjęcie</button>
           <button id="retake-btn" class="btn btn-outline" type="button" hidden>↻ Powtórz zdjęcie</button>
+          <label class="btn btn-outline gallery-upload" for="gallery-file">🖼️ Dodaj z galerii</label>
+          <input type="file" id="gallery-file" accept="image/jpeg,image/png,image/webp" class="sr-only" aria-label="Wybierz zdjęcie psa albo kota z galerii" />
         </div>
+        <p id="photo-source-note" class="source-note" hidden></p>
         <div id="photo-fields" class="photo-fields" hidden>
           <label for="dog-name" id="dog-name-label">Jak nazwiesz tego psa?</label>
           <input id="dog-name" type="text" maxlength="32" placeholder="Np. Rudzielec, Borys, Łaciatek" autocomplete="off" />
@@ -71,6 +75,7 @@
           <button id="save-unverified" class="btn btn-link full" type="button" hidden>Zapisz tylko do testów (0 punktów)</button>
         </div>
         <p id="camera-message" role="status" aria-live="polite" class="status-line"></p>
+        <div class="safety-note"><strong>🖼️ Zdjęcia z galerii</strong><p>Możesz dodać własną fotografię z telefonu do prywatnego albumu. Nie przyznajemy punktów za zdjęcia z galerii — trudno potwierdzić ich pochodzenie i datę. Nie wrzucaj cudzych zdjęć bez uprawnienia.</p></div>
         <div class="safety-note"><strong>🧠 Co potrafi AI?</strong><p>COCO-SSD rozpoznaje kategorie „dog” i „cat”, ale może się pomylić i przyjąć zdjęcie zwierzęcia z ekranu. Nie identyfikuje konkretnego zwierzęcia ani nie gwarantuje filtrowania drastycznych treści. Zdjęcia pozostają prywatne.</p></div>
       </section>
 
@@ -98,6 +103,28 @@
         <p class="map-credit"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a></p>
       </section>
 
+      <section id="view-missions" class="view" aria-labelledby="missions-title">
+        <div class="section-heading"><div><p class="eyebrow">WIRTUALNE WYZWANIA</p><h1 id="missions-title">🎯 Misje spacerowe</h1></div></div>
+        <p class="lead">Wybierz spacer, uruchom licznik i wróć, gdy minie czas. Nie potrzebujesz psa ani kota. Brak nagród pieniężnych — tylko XP, poziomy i odznaki.</p>
+        <div class="mission-level"><strong id="mission-level">Poziom 1</strong><span id="mission-xp">0 XP</span><div class="xp-track"><div id="mission-xp-bar"></div></div><small id="mission-xp-next">Do poziomu 2: 100 XP</small></div>
+        <div id="mission-choices" class="mission-choice-grid">
+          <button type="button" class="mission-choice" data-walk-minutes="0"><strong>🚶 Spacer swobodny</strong><span>Bez limitu czasu, mierz KM</span><small>Bez XP</small></button>
+          <button type="button" class="mission-choice" data-walk-minutes="15"><strong>🌱 Krótki spacer</strong><span>15 minut</span><small>+15 XP</small></button>
+          <button type="button" class="mission-choice" data-walk-minutes="30"><strong>🚶 Odkrywca</strong><span>30 minut</span><small>+35 XP</small></button>
+          <button type="button" class="mission-choice" data-walk-minutes="45"><strong>🏅 Długa wyprawa</strong><span>45 minut</span><small>+60 XP</small></button>
+        </div>
+        <label class="toggle-line walk-gps-toggle"><input id="walk-gps-choice" type="checkbox" checked /><span>📍 Mierz kilometry przez GPS <small>Trasa i dokładne punkty GPS nie są zapisywane ani wysyłane. Zapisujemy tylko sumę metrów. Możesz odmówić dostępu.</small></span></label>
+        <div class="feature-card" id="walk-live" hidden>
+          <h2>🚶 Trwa misja</h2><p id="walk-mission-name"></p><div class="walk-stats"><div><small>⏳ Do końca</small><strong id="walk-countdown" class="walk-clock">00:00</strong></div><div><small>📍 Dystans GPS</small><strong id="walk-km">0,00 km</strong></div><div><small>⏱ Czas spaceru</small><strong id="walk-elapsed">0 min</strong></div><div><small>🏃 Średnia prędkość</small><strong id="walk-avg">0 km/h</strong></div></div><p id="walk-gps-state" class="status-line">Uruchamiam GPS…</p>
+          <p id="walk-progress"></p>
+          <button type="button" class="btn btn-primary" id="finish-walk" disabled>✅ Zakończ misję</button>
+          <button type="button" class="btn btn-outline" id="cancel-walk">Anuluj</button>
+        </div>
+        <p id="walk-notice" role="status" class="status-line" aria-live="polite"></p>
+        <div class="feature-card"><h2>🏆 Moje osiągnięcia</h2><div id="walk-achievements" class="achievement-row"></div><p id="walk-history"></p><button type="button" id="share-progress" class="btn btn-outline">📤 Pokaż wynik znajomym</button></div>
+        <div class="safety-note"><strong>Ważne: zasady uczciwej gry</strong><p>Misja zlicza czas od startu i orientacyjne kilometry po GPS. Przeglądarka może przerwać GPS po zablokowaniu ekranu; wtedy nie doliczy dystansu. Nie jest to dokładny krokomierz ani dowód spaceru. Maksymalnie jedna misja dziennie daje XP. Nie korzystaj z telefonu podczas przechodzenia przez ulicę.</p></div>
+      </section>
+
       <section id="view-help" class="view" aria-labelledby="help-title">
         <div class="section-heading"><div><p class="eyebrow">MODUŁ W PLANACH</p><h1 id="help-title">Zaginione psy i koty</h1></div><span class="chip">W przygotowaniu</span></div>
         <div class="feature-card"><span class="feature-icon">❤️</span><h2>Pomóż wrócić do domu</h2><p>W kolejnej wersji chcemy umożliwić bezpieczne ogłoszenia o zaginionych psach i kotach oraz prywatne zgłaszanie obserwacji opiekunom. Na razie ten moduł nie działa — nie przyjmujemy ogłoszeń ani danych kontaktowych.</p></div>
@@ -109,8 +136,22 @@
         <div class="feature-card"><h2>Jak przechowujemy zdjęcia?</h2><p>W tej wersji tylko lokalnie w bazie IndexedDB Twojej przeglądarki. Nie potrzebujesz konta. Po zmianie telefonu lub wyczyszczeniu danych przeglądarki możesz stracić kolekcję.</p><p>Zdjęcia są zmniejszane do maksymalnie 1024 pikseli na dłuższym boku, by oszczędzać miejsce.</p></div>
         <div class="feature-card"><h2>Wykrywanie psów i kotów</h2><p>Model COCO-SSD ładuje się z zewnętrznego CDN przy pierwszym użyciu. Analiza zdjęcia odbywa się w przeglądarce — nie wysyłamy zdjęcia do usługi AI. Mapa wymaga internetu.</p><p>To demonstracja, a nie zabezpieczona aplikacja społecznościowa. Automatycznej moderacji drastycznych zdjęć na razie nie ma, dlatego zdjęcia nie są publikowane.</p></div>
         <div class="feature-card"><h2>Miejsce spotkania i dane</h2><p>Możesz wpisać miejscowość samodzielnie albo włączyć GPS. Przy automatycznym ustalaniu nazwy okolicy współrzędne wysyłamy na żądanie do publicznego serwisu Nominatim (OpenStreetMap). Wybór jest dobrowolny. Zwykłe zdjęcia i historia nie opuszczają przeglądarki. <a href="https://operations.osmfoundation.org/policies/nominatim/" target="_blank" rel="noopener noreferrer">Zasady Nominatim</a>.</p><p>Do starszego zdjęcia możesz dodać nazwę i punkt na mapie w kolekcji. Nie przypisuj mu aktualnego GPS, jeśli zdjęcie było zrobione gdzie indziej.</p></div>
-        <div class="feature-card"><h2>Kopia zapasowa kolekcji</h2><p>Możesz pobrać całą kolekcję ze zdjęciami i lokalizacjami jako prywatny plik JSON. Przechowuj go bezpiecznie. Nie wysyłaj publicznie.</p><button id="export-data" type="button" class="btn btn-primary">⬇️ Pobierz kopię</button><p>Masz kopię z Łapki GO? Przywróć zdjęcia na tym telefonie (istniejące wpisy zostaną zachowane).</p><input id="import-data" type="file" accept=".json,application/json" aria-label="Wybierz plik kopii Łapki GO"/><p id="backup-message" class="status-line" role="status"></p></div><div class="feature-card"><h2>Usuń lokalne dane</h2><p>Usunie wszystkie zdjęcia, punkty i prywatne lokalizacje z tej przeglądarki. Nie można tego cofnąć.</p><button id="delete-all" type="button" class="btn btn-danger">🗑 Usuń moją kolekcję</button></div>
-        <p class="footer-note">Łapki GO v0.4 · prototyp, bez rejestracji, bez reklam i bez płatnych usług.</p>
+        <div class="feature-card"><h2>📲 Zainstaluj na telefonie</h2><p><strong>Android:</strong> otwórz link aplikacji w Chrome (nie wewnątrz Facebooka), następnie menu ⋮ → „Zainstaluj aplikację” lub „Dodaj do ekranu głównego”. <strong>iPhone:</strong> otwórz w Safari, wybierz Udostępnij → „Do ekranu początkowego”. Nie trzeba APK ani IPA, aby korzystać z wersji PWA.</p></div>
+        <div class="feature-card"><h2>🛡️ Niedozwolone zdjęcia</h2><p>Nie dodawaj materiałów drastycznych, pornograficznych, przedstawiających krzywdzenie zwierząt, cudzych wizerunków ani treści naruszających prawo. W wersji 0.6 nie ma publicznej galerii ani automatycznej moderacji takich materiałów. Po uruchomieniu funkcji publicznych takie treści powinny być usuwane po rozpatrzeniu zgłoszeń, a poważne naruszenia zgłaszane właściwym organom, jeśli wymagają tego przepisy. AI rozpoznające gatunek nie zastępuje filtra bezpieczeństwa. Publiczne publikowanie włączymy dopiero po wdrożeniu skutecznych procedur zgłaszania i moderacji.</p></div>
+        <div class="feature-card" id="local-report-box"><h2>🚩 Zgłoś nieodpowiednie zdjęcie</h2>
+          <p>W kolekcji kliknij „⚑ Zgłoś” przy zdjęciu. Możesz przygotować zgłoszenie i zasłonić zdjęcie u siebie. <strong>Nie ma jeszcze serwera moderatorów. Zgłoszenie NIE będzie wysłane.</strong></p>
+          <input type="hidden" id="report-animal-id" /><p id="report-target-name" class="status-line">Nie wybrano zdjęcia.</p>
+          <label for="report-reason" class="place-label">Powód</label>
+          <select id="report-reason" class="report-input"><option value="">Wybierz powód…</option><option value="violence">Przemoc wobec zwierząt / drastyczne zdjęcie</option><option value="sexual">Nagość lub pornografia</option><option value="privacy">Wizerunek osoby / naruszenie prywatności</option><option value="spam">Spam, oszustwo lub zdjęcie z internetu</option><option value="other">Inne naruszenie zasad</option></select>
+          <label for="report-details" class="place-label">Opis (opcjonalnie)</label><textarea id="report-details" class="report-input" rows="3" maxlength="500" placeholder="Co jest nie tak?"></textarea>
+          <button type="button" class="btn btn-danger" id="submit-local-report">🚩 Zapisz zgłoszenie lokalnie i ukryj zdjęcie</button>
+          <button type="button" class="btn btn-outline" id="export-reports">⬇️ Pobierz listę zgłoszeń</button>
+          <p id="report-status" role="status" aria-live="polite" class="status-line"></p><p id="local-report-count" class="help-hint">Lokalnie przygotowane zgłoszenia: 0.</p>
+        </div>
+        <div class="safety-note"><strong>⚠️ Zasady fotografowania</strong><p>Zakazane są zdjęcia drastyczne, pornograficzne, przedstawiające znęcanie się nad zwierzętami, dane osobowe i zdjęcia publikowane bez wymaganych zgód. W razie uruchomienia części publicznej zgłoszone treści będą wymagać weryfikacji, usuwania, obsługi odwołań i odpowiednich procedur zgłaszania naruszeń. Sam regulamin nie znosi odpowiedzialności prowadzącego.</p></div>
+        <div class="feature-card"><h2>📍 Sprawdź GPS bez zwierzęcia</h2><p>Nie musisz robić zdjęcia, żeby sprawdzić lokalizację telefonu. Współrzędne testu nie są zapisywane w kolekcji ani nigdzie wysyłane.</p><button type="button" class="btn btn-outline" id="test-gps">Sprawdź mój GPS</button><p id="gps-test-result" class="status-line" role="status" aria-live="polite"></p></div>
+        <div class="feature-card"><h2>Kopia zapasowa kolekcji i misji</h2><p>Możesz pobrać kolekcję ze zdjęciami, lokalizacjami i historią misji jako prywatny plik JSON. Przechowuj go bezpiecznie. Nie wysyłaj publicznie.</p><button id="export-data" type="button" class="btn btn-primary">⬇️ Pobierz kopię</button><p>Masz kopię z Łapki GO? Przywróć zdjęcia na tym telefonie (istniejące wpisy zostaną zachowane).</p><input id="import-data" type="file" accept=".json,application/json" aria-label="Wybierz plik kopii Łapki GO"/><p id="backup-message" class="status-line" role="status"></p></div><div class="feature-card"><h2>Usuń lokalne dane</h2><p>Usunie wszystkie zdjęcia, punkty i prywatne lokalizacje z tej przeglądarki. Nie można tego cofnąć.</p><button id="delete-all" type="button" class="btn btn-danger">🗑 Usuń moją kolekcję</button></div>
+        <p class="footer-note">Łapki GO v0.6 · prototyp, bez rejestracji, bez reklam i bez płatnych usług.</p>
       </section>
     </main>
 
@@ -119,7 +160,7 @@
       <button type="button" class="nav-button" data-navigate="catch"><span aria-hidden="true">📷</span><small>Złap</small></button>
       <button type="button" class="nav-button" data-navigate="collection"><span aria-hidden="true">🐾</span><small>Kolekcja</small></button>
       <button type="button" class="nav-button" data-navigate="map"><span aria-hidden="true">🗺️</span><small>Mapa</small></button>
-      <button type="button" class="nav-button" data-navigate="help"><span aria-hidden="true">❤️</span><small>Pomoc</small></button>
+      <button type="button" class="nav-button" data-navigate="missions"><span aria-hidden="true">🎯</span><small>Misje</small></button>
       <button type="button" class="nav-button" data-navigate="settings"><span aria-hidden="true">⚙️</span><small>Opcje</small></button>
     </nav>
   </div>
